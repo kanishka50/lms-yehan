@@ -12,7 +12,13 @@ class DigitalProductController extends Controller
      */
     public function index()
     {
-        $digitalProducts = DigitalProduct::where('inventory_count', '>', 0)->get();
+        // Remove inventory_count check - PDFs don't have inventory
+        $digitalProducts = DigitalProduct::where('is_featured', true)
+            ->orWhere('is_featured', false) // Get all products
+            ->orderBy('is_featured', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
         return view('digital-products', compact('digitalProducts'));
     }
     

@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 use App\Mail\OrderConfirmation;
 use App\Services\CouponService;
 use App\Services\ReferralService;
+use App\Models\UserDigitalProductAccess;
 
 class OrderService
 {
@@ -242,6 +243,8 @@ public function completeOrder(Order $order, $paymentId = null)
         // Update order status
         $updateData = [
             'payment_status' => 'completed',
+            'payment_verified_at' => now(),
+            'payment_verified_by' => auth()->id(), // Admin who verified
         ];
         
         if ($paymentId) {
@@ -261,17 +264,17 @@ public function completeOrder(Order $order, $paymentId = null)
                     'course_id' => $item->item_id,
                 ], [
                     'order_id' => $order->id,
-                    'expires_at' => null,           // Never expires for purchased courses
                     'purchased_at' => now(),
                 ]);
             } elseif ($item->item_type === 'digital_product') {
-                // Assign product key to user
-                $product = DigitalProduct::find($item->item_id);
-                $key = $product->availableKeys()->first();
-                
-                if ($key) {
-                    $key->markAsUsed($user->id);
-                }
+                // Grant access to digital product (PDF)
+                UserDigitalProductAccess::firstOrCreate([
+                    'user_id' => $user->id,
+                    'digital_product_id' => $item->item_id,
+                ], [
+                    'order_id' => $order->id,
+                    'granted_at' => now(),
+                ]);
             }
         }
 

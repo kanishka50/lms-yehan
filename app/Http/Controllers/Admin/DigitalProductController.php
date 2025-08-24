@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DigitalProduct;
 use App\Http\Requests\Admin\DigitalProductRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class DigitalProductController extends Controller
 {
@@ -14,7 +15,7 @@ class DigitalProductController extends Controller
      */
     public function index()
     {
-        $digitalProducts = DigitalProduct::all();
+        $digitalProducts = DigitalProduct::latest()->paginate(10);
         return view('admin.digital-products.index', compact('digitalProducts'));
     }
 
@@ -31,10 +32,35 @@ class DigitalProductController extends Controller
      */
     public function store(DigitalProductRequest $request)
     {
-        $digitalProduct = DigitalProduct::create($request->validated());
+        $data = $request->validated();
+        
+        // Handle PDF file upload
+        if ($request->hasFile('pdf_file')) {
+            $file = $request->file('pdf_file');
+            $fileName = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
+            $filePath = $file->storeAs('pdfs', $fileName, 'private');
+            
+            $data['pdf_file_path'] = $filePath;
+            $data['file_size'] = $file->getSize();
+            $data['type'] = 'pdf';
+            
+            // You can add logic to count PDF pages here if needed
+            // $data['page_count'] = $this->countPdfPages($file);
+        }
+        
+        DigitalProduct::create($data);
         
         return redirect()->route('admin.digital-products.index')
             ->with('success', 'Digital product created successfully!');
+    }
+
+    /**
+     * Display the specified digital product.
+     */
+    public function show(DigitalProduct $digitalProduct)
+    {
+        $users = $digitalProduct->users()->withPivot('granted_at')->get();
+        return view('admin.digital-products.show', compact('digitalProduct', 'users'));
     }
 
     /**
@@ -50,7 +76,25 @@ class DigitalProductController extends Controller
      */
     public function update(DigitalProductRequest $request, DigitalProduct $digitalProduct)
     {
-        $digitalProduct->update($request->validated());
+        $data = $request->validated();
+        
+        // Handle PDF file upload
+        if ($request->hasFile('pdf_file')) {
+            // Delete old file if exists
+            if ($digitalProduct->pdf_file_path) {
+                Storage::disk('private')->delete($digitalProduct->pdf_file_path);
+            }
+            
+            $file = $request->file('pdf_file');
+            $fileName = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
+            $filePath = $file->storeAs('pdfs', $fileName, 'private');
+            
+            $data['pdf_file_path'] = $filePath;
+            $data['file_size'] = $file->getSize();
+            $data['type'] = 'pdf';
+        }
+        
+        $digitalProduct->update($data);
         
         return redirect()->route('admin.digital-products.index')
             ->with('success', 'Digital product updated successfully!');
@@ -62,13 +106,19 @@ class DigitalProductController extends Controller
     public function destroy(DigitalProduct $digitalProduct)
     {
         // Check if product has been purchased
-        $hasPurchases = $digitalProduct->productKeys()->where('is_used', true)->exists();
+        $hasPurchases = $digitalProduct->userAccess()->exists();
         if ($hasPurchases) {
             return redirect()->route('admin.digital-products.index')
                 ->with('error', 'Cannot delete digital product with active purchases!');
         }
         
+        // Delete PDF file if exists
+        if ($digitalProduct->pdf_file_path) {
+            Storage::disk('private')->delete($digitalProduct->pdf_file_path);
+        }
+        
         $digitalProduct->delete();
+        
         return redirect()->route('admin.digital-products.index')
             ->with('success', 'Digital product deleted successfully!');
     }

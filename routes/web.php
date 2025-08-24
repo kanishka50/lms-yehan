@@ -103,14 +103,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', \App\Http\Middleware
     // Digital products routes
     Route::resource('digital-products', AdminDigitalProductController::class);
     
-    // Product keys routes
-    Route::get('digital-products/{digitalProduct}/keys', [AdminProductKeyController::class, 'index'])->name('digital-products.keys');
-    Route::post('digital-products/{digitalProduct}/keys', [AdminProductKeyController::class, 'store'])->name('digital-products.keys.store');
-    Route::delete('digital-products/{digitalProduct}/keys/{key}', [AdminProductKeyController::class, 'destroy'])->name('digital-products.keys.destroy');
-
-    // Route::view('/coupons', 'admin.coupons.index')->name('coupons.index');
-    // Route::view('/coupons/create', 'admin.coupons.create')->name('coupons.create');
-    // Route::view('/coupons/{id}/edit', 'admin.coupons.edit')->name('coupons.edit');
 
     Route::view('/orders', 'admin.orders.index')->name('orders.index');
     Route::get('orders/{order}', [OrderController::class, 'show'])->name('admin.orders.show');
@@ -181,14 +173,10 @@ Route::prefix('user')->name('user.')->middleware(['auth', 'verified'])->group(fu
     Route::post('/videos/{video}/progress', [UserVideoController::class, 'updateProgress'])->name('videos.progress');
     
     
-    // Digital products routes
+   // Digital products routes - simplified
     Route::get('/digital-products', [UserDigitalProductController::class, 'index'])->name('digital-products.index');
-    Route::get('/digital-products/subscription/{digitalProduct}', [UserDigitalProductController::class, 'showSubscriptionProduct'])
-    ->name('digital-products.subscription.show');
-    Route::get('/digital-products/{productKey}', [UserDigitalProductController::class, 'show'])->name('digital-products.show');
-
-    // Route::view('/orders', 'user.orders.index')->name('orders.index');
-    // Route::view('/orders/{id}', 'user.orders.show')->name('orders.show');
+    Route::get('/digital-products/{digitalProduct}', [UserDigitalProductController::class, 'show'])->name('digital-products.show');
+    Route::get('/digital-products/{digitalProduct}/view-pdf', [UserDigitalProductController::class, 'viewPdf'])->name('digital-products.view-pdf');
 
     Route::view('/wishlist', 'user.wishlist.index')->name('wishlist.index');
     Route::post('/wishlist/toggle', function() {

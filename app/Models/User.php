@@ -97,13 +97,6 @@ class User extends Authenticatable implements MustVerifyEmail
             ->exists();
     }
 
-    /**
-     * Get the digital product keys purchased by the user.
-     */
-    public function productKeys()
-    {
-        return $this->hasMany(ProductKey::class, 'used_by');
-    }
 
     /**
      * Check if the user has access to a course.
@@ -115,15 +108,33 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Check if the user has access to a digital product.
-     * Now only checks purchased product keys.
-     */
-    public function hasAccessToDigitalProduct(DigitalProduct $product)
-    {
-        return $this->productKeys()
-            ->where('digital_product_id', $product->id)
-            ->exists();
-    }
+ * Get digital products the user has access to.
+ */
+public function digitalProductAccess()
+{
+    return $this->hasMany(UserDigitalProductAccess::class);
+}
+
+/**
+ * Get digital products through access table.
+ */
+public function digitalProducts()
+{
+    return $this->belongsToMany(DigitalProduct::class, 'user_digital_product_access')
+                ->withPivot('order_id', 'granted_at')
+                ->withPivotValue('granted_at', function ($value) {
+                    return $value ? \Carbon\Carbon::parse($value) : null;
+                });
+}
+
+/**
+ * Check if user has access to a specific digital product.
+ */
+public function hasAccessToDigitalProduct($digitalProduct)
+{
+    $productId = is_object($digitalProduct) ? $digitalProduct->id : $digitalProduct;
+    return $this->digitalProductAccess()->where('digital_product_id', $productId)->exists();
+}
 
     /**
      * Get the orders for the user.

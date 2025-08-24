@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\ProductKey;
 use App\Models\DigitalProduct;
+use App\Models\UserDigitalProductAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 
 class DigitalProductController extends Controller
@@ -18,26 +19,59 @@ class DigitalProductController extends Controller
     {
         $user = Auth::user();
         
-        // Get only purchased products (no subscription logic)
-        $productKeys = User::find(Auth::id())->productKeys()
-            ->with('digitalProduct')
+        // Get digital products user has access to
+        $digitalProducts = User::find(Auth::id())->digitalProducts()
+            ->withPivot('granted_at', 'order_id')
             ->get();
         
-        return view('user.digital-products.index', compact('productKeys'));
+        return view('user.digital-products.index', compact('digitalProducts'));
     }
     
     /**
      * Display the specified digital product details.
      */
-    public function show(ProductKey $productKey)
+    public function show(DigitalProduct $digitalProduct)
     {
         $user = Auth::user();
         
-        // Check if user owns this product key
-        if ($productKey->used_by !== $user->id) {
+        // Check if user has access to this product
+        if (!User::find(Auth::id())->hasAccessToDigitalProduct($digitalProduct)) {
             abort(403, 'You do not have access to this digital product.');
         }
         
-        return view('user.digital-products.show', compact('productKey'));
+        // Get the user's access record
+        $access = UserDigitalProductAccess::where('user_id', $user->id)
+            ->where('digital_product_id', $digitalProduct->id)
+            ->with('order')
+            ->first();
+        
+        return view('user.digital-products.show', compact('digitalProduct', 'access'));
+    }
+
+    /**
+     * View PDF in browser (protected route).
+     */
+    public function viewPdf(DigitalProduct $digitalProduct)
+    {
+        $user = Auth::user();
+        
+        // Check if user has access to this product
+        if (!User::find(Auth::id())->hasAccessToDigitalProduct($digitalProduct)) {
+            abort(403, 'You do not have access to this PDF.');
+        }
+
+        // Check if PDF file exists
+        if (!$digitalProduct->pdf_file_path || !Storage::disk('private')->exists($digitalProduct->pdf_file_path)) {
+            abort(404, 'PDF file not found.');
+        }
+
+        // Stream the PDF to browser
+        return response()->file(
+            Storage::disk('private')->path($digitalProduct->pdf_file_path),
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $digitalProduct->name . '.pdf"',
+            ]
+        );
     }
 }
