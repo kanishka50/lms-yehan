@@ -53,40 +53,29 @@
                     @foreach($pendingPayments as $payment)
                     <tr class="hover:bg-darker/50 transition-colors">
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 py-1 text-xs rounded-full {{ $payment->type === 'order' ? 'bg-blue-900/20 text-blue-400' : 'bg-purple-900/20 text-purple-400' }}">
-                                {{ ucfirst($payment->type) }}
+                            <span class="px-2 py-1 text-xs rounded-full bg-blue-900/20 text-blue-400">
+                                Order
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                            @if($payment->type === 'order')
-                                {{ $payment->order_number }}
-                            @else
-                                {{ $payment->subscriptionPlan->name }}
-                            @endif
+                            {{ $payment->order_number }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-gray-300">{{ $payment->user->name }}</div>
                             <div class="text-xs text-gray-500">{{ $payment->user->email }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">
-                            Rs. {{ number_format($payment->type === 'order' ? $payment->final_amount : $payment->price, 2) }}
+                            Rs. {{ number_format($payment->final_amount, 2) }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                             {{ $payment->payment_receipt_uploaded_at->format('M d, Y h:i A') }}
                             <div class="text-xs text-gray-500">{{ $payment->payment_receipt_uploaded_at->diffForHumans() }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
-                            @if($payment->type === 'order')
-                                <a href="{{ route('admin.payment-verifications.show-order', $payment) }}" 
-                                   class="text-primary-400 hover:text-primary-300 font-medium">
-                                    Review
-                                </a>
-                            @else
-                                <a href="{{ route('admin.payment-verifications.show-subscription', $payment) }}" 
-                                   class="text-primary-400 hover:text-primary-300 font-medium">
-                                    Review
-                                </a>
-                            @endif
+                            <a href="{{ route('admin.payment-verifications.show-order', $payment) }}" 
+                               class="text-primary-400 hover:text-primary-300 font-medium">
+                                Review
+                            </a>
                         </td>
                     </tr>
                     @endforeach
@@ -97,21 +86,15 @@
 </div>
 
 {{-- Summary Cards --}}
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
     <div class="bg-card rounded-lg shadow-md p-6 border border-gray-800">
         <h3 class="text-lg font-semibold text-gray-200 mb-2">Pending Orders</h3>
-        <p class="text-3xl font-bold text-blue-400">{{ $pendingPayments->where('type', 'order')->count() }}</p>
-    </div>
-    <div class="bg-card rounded-lg shadow-md p-6 border border-gray-800">
-        <h3 class="text-lg font-semibold text-gray-200 mb-2">Pending Subscriptions</h3>
-        <p class="text-3xl font-bold text-purple-400">{{ $pendingPayments->where('type', 'subscription')->count() }}</p>
+        <p class="text-3xl font-bold text-blue-400">{{ $pendingPayments->count() }}</p>
     </div>
     <div class="bg-card rounded-lg shadow-md p-6 border border-gray-800">
         <h3 class="text-lg font-semibold text-gray-200 mb-2">Total Pending Amount</h3>
         <p class="text-2xl font-bold text-green-400">
-            Rs. {{ number_format($pendingPayments->sum(function($p) { 
-                return $p->type === 'order' ? $p->final_amount : $p->price; 
-            }), 2) }}
+            Rs. {{ number_format($pendingPayments->sum('final_amount'), 2) }}
         </p>
     </div>
 </div>

@@ -11,8 +11,7 @@ class UserCourse extends Model
         'course_id',
         'order_id',
         'subscription_id',
-        'access_type',      // NEW
-        'expires_at',       // NEW
+        'expires_at',
         'purchased_at',
     ];
 
@@ -37,16 +36,12 @@ class UserCourse extends Model
         return $this->belongsTo(Order::class);
     }
 
-    public function subscription()
-    {
-        return $this->belongsTo(UserSubscription::class, 'subscription_id');
-    }
 
     // Check if access is valid
     public function isValid()
     {
-        // Purchased items are always valid
-        if ($this->access_type === 'purchased') {
+        // Purchased items (no subscription_id) are always valid
+        if (is_null($this->subscription_id)) {
             return true;
         }
         
@@ -58,9 +53,9 @@ class UserCourse extends Model
     public function scopeValid($query)
     {
         return $query->where(function ($q) {
-            $q->where('access_type', 'purchased')
+            $q->whereNull('subscription_id') // Purchased items
               ->orWhere(function ($sub) {
-                  $sub->where('access_type', 'subscription')
+                  $sub->whereNotNull('subscription_id') // Subscription items
                       ->where(function ($exp) {
                           $exp->whereNull('expires_at')
                               ->orWhere('expires_at', '>', now());
@@ -72,7 +67,7 @@ class UserCourse extends Model
     // Scope for expired access
     public function scopeExpired($query)
     {
-        return $query->where('access_type', 'subscription')
+        return $query->whereNotNull('subscription_id')
                      ->where('expires_at', '<=', now());
     }
 }

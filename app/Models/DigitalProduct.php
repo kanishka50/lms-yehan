@@ -55,19 +55,6 @@ class DigitalProduct extends Model
         return $this->availableKeys()->count() > 0;
     }
 
-    /**
-     * Get the coupons for this product.
-     */
-    // public function coupons()
-    // {
-    //     return $this->belongsToMany(Coupon::class, 'coupon_product');
-    // }
-
-    public function subscriptionPlans()
-    {
-        return $this->belongsToMany(SubscriptionPlan::class, 'subscription_plan_digital_product')
-            ->withTimestamps();
-    }
 
     /**
  * Get the commission rate for this product.

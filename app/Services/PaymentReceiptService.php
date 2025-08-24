@@ -3,7 +3,6 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Models\User;  // ADD THIS LINE - This was missing!
-use App\Models\UserSubscription;
 use App\Models\UserCourse;
 use App\Models\ProductKey;
 use Illuminate\Http\UploadedFile;
@@ -43,34 +42,6 @@ class PaymentReceiptService
     }
     
     /**
-     * Handle receipt upload for a subscription.
-     *
-     * @param UploadedFile $file
-     * @param UserSubscription $subscription
-     * @return string
-     */
-    public function handleSubscriptionReceiptUpload(UploadedFile $file, UserSubscription $subscription)
-    {
-        // Generate unique filename
-        $filename = $this->generateFilename($file, 'subscription', $subscription->id);
-        
-        // Store file in private storage
-        $path = $file->storeAs(
-            'payment_receipts/subscriptions/' . date('Y/m'),
-            $filename,
-            'private'
-        );
-        
-        // Update subscription with receipt info
-        $subscription->update([
-            'payment_receipt' => $path,
-            'payment_receipt_uploaded_at' => now()
-        ]);
-        
-        return $path;
-    }
-    
-    /**
      * Verify payment for an order.
      *
      * @param Order $order
@@ -96,229 +67,6 @@ class PaymentReceiptService
         return $order;
     }
     
-    /**
-     * Verify payment for a subscription and grant access to content.
-     *
-     * @param UserSubscription $subscription
-     * @param int $adminId
-     * @param string|null $notes
-     * @return UserSubscription
-     */
-    public function verifySubscriptionPayment(UserSubscription $subscription, $adminId, $notes = null)
-    {
-        try {
-            DB::beginTransaction();
-            
-            // Step 1: Deactivate all other active subscriptions
-            UserSubscription::where('user_id', $subscription->user_id)
-                ->where('id', '!=', $subscription->id)
-                ->where('is_active', true)
-                ->update([
-                    'is_active' => false,
-                    'ends_at' => now(),
-                    'admin_notes' => 'Deactivated due to new subscription activation'
-                ]);
-            
-            // Step 2: Revoke all existing subscription-based access
-            $this->revokeUserSubscriptionAccess($subscription->user);
-            
-            // Step 3: Calculate subscription dates
-            $startsAt = now();
-            $endsAt = $subscription->billing_cycle === 'yearly' 
-                ? $startsAt->copy()->addYear() 
-                : $startsAt->copy()->addMonth();
-            
-            // Step 4: Update subscription status
-            $subscription->update([
-                'payment_status' => 'completed',
-                'payment_verified_by' => $adminId,
-                'payment_verified_at' => now(),
-                'starts_at' => $startsAt,
-                'ends_at' => $endsAt,
-                'is_active' => true,
-                'admin_notes' => $notes
-            ]);
-            
-            // Step 5: Grant new subscription access
-            $this->grantSubscriptionContentAccess($subscription);
-            
-            DB::commit();
-            
-            // Notify user
-            $this->notifyUserSubscriptionStatus($subscription, 'verified');
-            
-            Log::info('Subscription verified, old access revoked, new access granted', [
-                'subscription_id' => $subscription->id,
-                'user_id' => $subscription->user_id,
-                'admin_id' => $adminId,
-                'expires_at' => $endsAt
-            ]);
-            
-            return $subscription;
-            
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Failed to verify subscription payment', [
-                'subscription_id' => $subscription->id,
-                'error' => $e->getMessage()
-            ]);
-            throw $e;
-        }
-    }
-    
-    /**
-     * Grant access to all courses and digital products in the subscription plan.
-     *
-     * @param UserSubscription $subscription
-     * @return void
-     */
-    // protected function grantSubscriptionContentAccess(UserSubscription $subscription)
-    // {
-    //     $user = $subscription->user;
-    //     $subscriptionPlan = $subscription->subscriptionPlan;
-    //     $expiresAt = $subscription->ends_at;
-        
-    //     // Grant access to all courses in the subscription plan
-    //     $courses = $subscriptionPlan->courses;
-    //     foreach ($courses as $course) {
-    //         UserCourse::create([
-    //             'user_id' => $user->id,
-    //             'course_id' => $course->id,
-    //             'subscription_id' => $subscription->id,
-    //             'access_type' => 'subscription',        // NEW
-    //             'expires_at' => $expiresAt,            // NEW
-    //             'purchased_at' => now(),
-    //         ]);
-            
-    //         Log::info('Course access granted via subscription', [
-    //             'user_id' => $user->id,
-    //             'course_id' => $course->id,
-    //             'subscription_id' => $subscription->id,
-    //             'expires_at' => $expiresAt
-    //         ]);
-    //     }
-        
-    //     // Assign product keys for digital products
-    //     $digitalProducts = $subscriptionPlan->digitalProducts;
-    //     foreach ($digitalProducts as $digitalProduct) {
-    //         // Find an available key
-    //         $availableKey = ProductKey::where('digital_product_id', $digitalProduct->id)
-    //             ->where('is_used', false)
-    //             ->lockForUpdate()
-    //             ->first();
-            
-    //         if ($availableKey) {
-    //             // Mark the key as used with expiry
-    //             $availableKey->markAsUsed(
-    //                 $user->id, 
-    //                 true,                   // subscription assigned
-    //                 $subscription->id,      // subscription ID
-    //                 $expiresAt             // expires at
-    //             );
-                
-    //             Log::info('Product key assigned via subscription', [
-    //                 'user_id' => $user->id,
-    //                 'product_id' => $digitalProduct->id,
-    //                 'key_id' => $availableKey->id,
-    //                 'subscription_id' => $subscription->id,
-    //                 'expires_at' => $expiresAt
-    //             ]);
-    //         } else {
-    //             Log::warning('No available keys for subscription product', [
-    //                 'user_id' => $user->id,
-    //                 'product_id' => $digitalProduct->id,
-    //                 'subscription_id' => $subscription->id
-    //             ]);
-    //         }
-    //     }
-    // }
- // In app/Services/PaymentReceiptService.php
-
-protected function grantSubscriptionContentAccess(UserSubscription $subscription)
-{
-    $user = $subscription->user;
-    $subscriptionPlan = $subscription->subscriptionPlan;
-    $expiresAt = $subscription->ends_at;
-    
-    // DON'T create UserCourse records - keep courses dynamic
-    
-    // BUT DO assign product keys immediately for all products in the plan
-    $digitalProducts = $subscriptionPlan->digitalProducts;
-    foreach ($digitalProducts as $digitalProduct) {
-        // Check if user already has a key for this product
-        $existingKey = ProductKey::where('digital_product_id', $digitalProduct->id)
-            ->where('used_by', $user->id)
-            ->first();
-        
-        if (!$existingKey) {
-            // Find an available key
-            $availableKey = ProductKey::where('digital_product_id', $digitalProduct->id)
-                ->where('is_used', false)
-                ->lockForUpdate()
-                ->first();
-            
-            if ($availableKey) {
-                // Assign the key with subscription info
-                $availableKey->update([
-                    'is_used' => true,
-                    'used_by' => $user->id,
-                    'used_at' => now(),
-                    'subscription_assigned' => true,
-                    'subscription_id' => $subscription->id,
-                    'expires_at' => $expiresAt
-                ]);
-                
-                Log::info('Product key assigned via subscription', [
-                    'user_id' => $user->id,
-                    'product_id' => $digitalProduct->id,
-                    'key_id' => $availableKey->id,
-                    'subscription_id' => $subscription->id
-                ]);
-            } else {
-                Log::warning('No available keys for subscription product', [
-                    'user_id' => $user->id,
-                    'product_id' => $digitalProduct->id,
-                    'subscription_id' => $subscription->id
-                ]);
-            }
-        }
-    }
-    
-    Log::info('Subscription activated', [
-        'subscription_id' => $subscription->id,
-        'user_id' => $user->id,
-        'keys_assigned' => $digitalProducts->count()
-    ]);
-}
-    
-    /**
-     * Revoke all subscription-based access for a user.
-     *
-     * @param User $user
-     * @return void
-     */
-    protected function revokeUserSubscriptionAccess(User $user)
-    {
-        // Delete all subscription-based course access
-        $deletedCourses = UserCourse::where('user_id', $user->id)
-            ->where('access_type', 'subscription')
-            ->delete();
-        
-        // Reset all subscription-assigned product keys
-        $resetKeys = ProductKey::where('used_by', $user->id)
-            ->where('subscription_assigned', true)
-            ->get();
-        
-        foreach ($resetKeys as $key) {
-            $key->resetKey();
-        }
-        
-        Log::info('Revoked subscription access', [
-            'user_id' => $user->id,
-            'courses_removed' => $deletedCourses,
-            'keys_reset' => $resetKeys->count()
-        ]);
-    }
     
     /**
      * Reject payment for an order.
@@ -341,29 +89,6 @@ protected function grantSubscriptionContentAccess(UserSubscription $subscription
         $this->notifyUserPaymentStatus($order, 'rejected', $reason);
         
         return $order;
-    }
-    
-    /**
-     * Reject payment for a subscription.
-     *
-     * @param UserSubscription $subscription
-     * @param int $adminId
-     * @param string $reason
-     * @return UserSubscription
-     */
-    public function rejectSubscriptionPayment(UserSubscription $subscription, $adminId, $reason)
-    {
-        $subscription->update([
-            'payment_status' => 'failed',
-            'payment_verified_by' => $adminId,
-            'payment_verified_at' => now(),
-            'admin_notes' => $reason
-        ]);
-        
-        // Notify user
-        $this->notifyUserSubscriptionStatus($subscription, 'rejected', $reason);
-        
-        return $subscription;
     }
     
     /**
@@ -429,24 +154,6 @@ protected function grantSubscriptionContentAccess(UserSubscription $subscription
         ]);
     }
     
-    /**
-     * Notify user about subscription payment status (placeholder for future implementation).
-     *
-     * @param UserSubscription $subscription
-     * @param string $status
-     * @param string|null $reason
-     * @return void
-     */
-    protected function notifyUserSubscriptionStatus(UserSubscription $subscription, $status, $reason = null)
-    {
-        // TODO: Implement email notification
-        // For now, this is a placeholder
-        Log::info("Subscription payment {$status}", [
-            'subscription_id' => $subscription->id,
-            'user_id' => $subscription->user_id,
-            'reason' => $reason
-        ]);
-    }
     
     /**
      * Get bank details for display.

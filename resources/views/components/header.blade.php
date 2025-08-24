@@ -11,7 +11,6 @@
                 <a href="{{ route('home') }}" class="text-gray-300 hover:text-primary-400 transition duration-200">Home</a>
                 <a href="{{ route('courses') }}" class="text-gray-300 hover:text-primary-400 transition duration-200">Courses</a>
                 <a href="{{ route('digital-products') }}" class="text-gray-300 hover:text-primary-400 transition duration-200">Digital Products</a>
-                <a href="{{ route('subscription-plans') }}" class="text-gray-300 hover:text-primary-400 transition duration-200">Subscriptions</a>
                 <a href="{{ route('about') }}" class="text-gray-300 hover:text-primary-400 transition duration-200">About</a>
                 <a href="{{ route('contact') }}" class="text-gray-300 hover:text-primary-400 transition duration-200">Contact</a>
             </nav>
@@ -35,7 +34,6 @@
                             @endif
                             <a href="{{ route('user.dashboard') }}" class="block px-4 py-2 text-gray-300 hover:bg-gray-800 hover:text-primary-400">My Dashboard</a>
                             <a href="{{ route('user.courses.index') }}" class="block px-4 py-2 text-gray-300 hover:bg-gray-800 hover:text-primary-400">My Courses</a>
-                            <a href="{{ route('user.subscriptions.index') }}" class="block px-4 py-2 text-gray-300 hover:bg-gray-800 hover:text-primary-400">My Subscriptions</a>
                             <a href="{{ route('user.orders.index') }}" class="block px-4 py-2 text-gray-300 hover:bg-gray-800 hover:text-primary-400">My Orders</a>
                             <a href="{{ route('user.profile.edit') }}" class="block px-4 py-2 text-gray-300 hover:bg-gray-800 hover:text-primary-400">Profile</a>
                             

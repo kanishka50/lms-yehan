@@ -38,21 +38,6 @@
         </div>
         @endif
         
-        @if(auth()->check() && auth()->user()->hasActiveSubscription())
-            @php
-                $subscriptionPlan = auth()->user()->activeSubscription()->subscriptionPlan;
-                $isInSubscription = $subscriptionPlan->courses()->where('courses.id', $course->id)->exists();
-            @endphp
-            
-            @if($isInSubscription)
-                <div class="mt-3 bg-green-900/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-sm inline-flex items-center">
-                    <svg class="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Included in your {{ $subscriptionPlan->name }} subscription
-                </div>
-            @endif
-        @endif
     </div>
 </div>
 
@@ -246,14 +231,6 @@
                                     Access Course
                                 </a>
                                 
-                                @if(auth()->user()->activeSubscription() && auth()->user()->activeSubscription()->subscriptionPlan->courses()->where('courses.id', $course->id)->exists())
-                                    <p class="mt-3 text-sm text-green-400 text-center">
-                                        <svg class="inline h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                        </svg>
-                                        Included in your subscription
-                                    </p>
-                                @endif
                             @else
                                 <form action="{{ route('checkout.buy') }}" method="POST">
                                     @csrf
@@ -267,14 +244,6 @@
                                     </button>
                                 </form>
                                 
-                                <div class="mt-4 text-center">
-                                    <a href="{{ route('subscription-plans.index') }}" class="text-accent-teal hover:text-accent-teal/80 transition-colors duration-200 flex items-center justify-center">
-                                        <svg class="h-5 w-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 9a2 2 0 10-4 0v5a2 2 0 01-2 2h6m-6-4h4m8 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        Or get this with a subscription plan
-                                    </a>
-                                </div>
                             @endif
                         @else
                             <a href="{{ route('login') }}" class="flex items-center justify-center w-full py-3 px-4 bg-accent-teal hover:bg-opacity-80 text-white text-center font-medium rounded-md transition-all duration-300 shadow-lg">

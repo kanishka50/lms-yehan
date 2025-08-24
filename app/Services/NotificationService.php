@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Notification;
 use App\Models\User;
-use App\Models\UserSubscription;
 
 class NotificationService
 {
@@ -47,50 +46,8 @@ class NotificationService
         );
     }
 
-    /**
-     * Create a notification for subscription expiration.
-     *
-     * @param UserSubscription $subscription
-     * @return Notification
-     */
-    public function createSubscriptionExpiringNotification(UserSubscription $subscription): Notification
-    {
-        $daysLeft = now()->diffInDays($subscription->ends_at);
-        
-        return $this->create(
-            $subscription->user_id,
-            'subscription_expiring',
-            'Your Subscription is Expiring Soon',
-            "Your {$subscription->subscriptionPlan->name} subscription will expire in {$daysLeft} days. Renew now to keep your access.",
-            [
-                'subscription_id' => $subscription->id,
-                'days_left' => $daysLeft,
-                'url' => route('subscription-plans.index')
-            ]
-        );
-    }
 
-    /**
-     * Create a notification for new course addition to subscription.
-     *
-     * @param UserSubscription $subscription
-     * @param int $courseId
-     * @param string $courseTitle
-     * @return Notification
-     */
-    public function createNewCourseAddedNotification(UserSubscription $subscription, int $courseId, string $courseTitle): Notification
-    {
-        return $this->create(
-            $subscription->user_id,
-            'new_course_added',
-            'New Course Added to Your Subscription',
-            "A new course '{$courseTitle}' has been added to your {$subscription->subscriptionPlan->name} subscription.",
-            [
-                'course_id' => $courseId,
-                'url' => route('courses.show', ['slug' => $courseId]) // This should be updated with the actual course slug
-            ]
-        );
-    }
+
 
     /**
      * Create a notification for successful purchase.

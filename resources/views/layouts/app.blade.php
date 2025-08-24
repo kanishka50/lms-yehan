@@ -148,11 +148,6 @@
                     <a href="{{ route('courses.index') }}" class="text-gray-300 hover:text-white transition-all duration-300 relative group">
                         Courses
                         <span class="absolute -bottom-1 left-0 w-0 h-[2px] bg-accent-teal transition-all duration-300 group-hover:w-full"></span>
-                    </a>
-                    <a href="{{ route('subscription-plans.index') }}" class="text-gray-300 hover:text-white transition-all duration-300 relative group">
-                        Subscriptions
-                        <span class="absolute -bottom-1 left-0 w-0 h-[2px] bg-accent-teal transition-all duration-300 group-hover:w-full"></span>
-                    </a>
                     <a href="{{ route('digital-products.index') }}" class="text-gray-300 hover:text-white transition-all duration-300 relative group">
                         Products
                         <span class="absolute -bottom-1 left-0 w-0 h-[2px] bg-accent-teal transition-all duration-300 group-hover:w-full"></span>
@@ -200,7 +195,6 @@
                 <div class="pt-4 pb-3 space-y-1">
                     <a href="{{ route('home') }}" class="block px-3 py-2 text-base font-medium text-gray-300 hover:text-white hover:bg-card rounded-md transition-all duration-200">Home</a>
                     <a href="{{ route('courses.index') }}" class="block px-3 py-2 text-base font-medium text-gray-300 hover:text-white hover:bg-card rounded-md transition-all duration-200">Courses</a>
-                    <a href="{{ route('subscription-plans.index') }}" class="block px-3 py-2 text-base font-medium text-gray-300 hover:text-white hover:bg-card rounded-md transition-all duration-200">Subscriptions</a>
                     <a href="{{ route('digital-products.index') }}" class="block px-3 py-2 text-base font-medium text-gray-300 hover:text-white hover:bg-card rounded-md transition-all duration-200">Products</a>
                 </div>
             </div>
@@ -255,7 +249,6 @@
                         <ul class="space-y-2">
                             <li><a href="{{ route('home') }}" class="text-gray-400 hover:text-accent-teal transition-colors duration-300">Home</a></li>
                             <li><a href="{{ route('courses.index') }}" class="text-gray-400 hover:text-accent-teal transition-colors duration-300">Courses</a></li>
-                            <li><a href="{{ route('subscription-plans.index') }}" class="text-gray-400 hover:text-accent-teal transition-colors duration-300">Subscriptions</a></li>
                             <li><a href="{{ route('digital-products.index') }}" class="text-gray-400 hover:text-accent-teal transition-colors duration-300">Products</a></li>
                         </ul>
                     </div>

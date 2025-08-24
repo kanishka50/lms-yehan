@@ -23,13 +23,10 @@ use App\Http\Controllers\User\WishlistController;
 use App\Http\Controllers\User\ProfileController;
 
 // New imports for Phase 3
-use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\DigitalProductController;
 use App\Http\Controllers\CheckoutController;
-use App\Http\Controllers\Admin\SubscriptionController as AdminSubscriptionController;
 use App\Http\Controllers\Admin\DigitalProductController as AdminDigitalProductController;
 use App\Http\Controllers\Admin\ProductKeyController as AdminProductKeyController;
-use App\Http\Controllers\User\SubscriptionController as UserSubscriptionController;
 use App\Http\Controllers\User\DigitalProductController as UserDigitalProductController;
 
 use App\Http\Controllers\User\ProfileController as UserProfileController;   
@@ -67,19 +64,11 @@ Route::get('/faqs', [PageController::class, 'faqs'])->name('faqs');
 Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
 Route::get('/courses/{slug}', [CourseController::class, 'show'])->name('courses.show');
 
-// Temp routes for Phase 3 features - these will be implemented later
-// Subscription routes
-Route::get('/subscription-plans', [SubscriptionController::class, 'index'])->name('subscription-plans.index');
-Route::post('/subscription-plans/{subscriptionPlan}/checkout', [SubscriptionController::class, 'checkout'])
-    ->middleware('auth', 'verified')
-    ->name('subscription-plans.checkout');
 
 // Digital products routes
 Route::get('/digital-products', [DigitalProductController::class, 'index'])->name('digital-products.index');
 Route::get('/digital-products/{digitalProduct}', [DigitalProductController::class, 'show'])->name('digital-products.show');
 
-// Payment success callbacks
-Route::get('/payment/subscription/success', [SubscriptionController::class, 'handleSuccess'])->name('payment.subscription.success');
 
 
 
@@ -110,9 +99,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', \App\Http\Middleware
     Route::post('videos/upload-chunk', [AdminVideoController::class, 'uploadChunk'])->name('videos.upload-chunk');
     Route::post('videos/complete-upload', [AdminVideoController::class, 'completeUpload'])->name('videos.complete-upload');
     
-    // Phase 3 routes (placeholders)
-  // Subscription routes
-    Route::resource('subscriptions', AdminSubscriptionController::class);
     
     // Digital products routes
     Route::resource('digital-products', AdminDigitalProductController::class);
@@ -143,11 +129,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', \App\Http\Middleware
     Route::view('/faqs/create', 'admin.faqs.create')->name('faqs.create');
     Route::view('/faqs/{id}/edit', 'admin.faqs.edit')->name('faqs.edit');
 
-    // Subscription content management
-    Route::get('subscriptions/{subscription}/manage-content', [AdminSubscriptionController::class, 'manageContent'])
-        ->name('subscriptions.manage-content');
-    Route::post('subscriptions/{subscription}/update-content', [AdminSubscriptionController::class, 'updateContent'])
-        ->name('subscriptions.update-content');
 
 
 
@@ -199,11 +180,6 @@ Route::prefix('user')->name('user.')->middleware(['auth', 'verified'])->group(fu
     Route::get('/videos/{video}', [UserVideoController::class, 'show'])->name('videos.show');
     Route::post('/videos/{video}/progress', [UserVideoController::class, 'updateProgress'])->name('videos.progress');
     
-    // Phase 3 routes (placeholders)
-    // Subscription routes
-    Route::get('/subscriptions', [UserSubscriptionController::class, 'index'])->name('subscriptions.index');
-    Route::get('/subscriptions/manage', [UserSubscriptionController::class, 'manage'])->name('subscriptions.manage');
-    Route::post('/subscriptions/cancel', [UserSubscriptionController::class, 'cancel'])->name('subscriptions.cancel');
     
     // Digital products routes
     Route::get('/digital-products', [UserDigitalProductController::class, 'index'])->name('digital-products.index');
@@ -309,50 +285,13 @@ Route::prefix('checkout')->name('checkout.')->middleware('auth', 'verified')->gr
 
 // Payment success routes
 Route::get('/payment/success', [CheckoutController::class, 'success'])->name('payment.success');
-// Route::get('/payment/subscription/success', [SubscriptionController::class, 'handleSuccess'])->name('payment.subscription.success');
-// Route::get('/payment/order/success', [CheckoutController::class, 'handleSuccess'])->name('payment.order.success');
 Route::get('/payment/cancel', [CheckoutController::class, 'cancel'])->name('payment.cancel');
-
-// Add this in web.php
-Route::get('/subscription/success', [SubscriptionController::class, 'success'])->name('subscription.success');
 
 
 // Wishlist route for toggling items
 Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])
     ->middleware('auth')
     ->name('wishlist.toggle');
-
-
-
-
-
-    Route::get('/debug-subscription', function() {
-    if (!Auth::check()) {
-        return "Please log in first";
-    }
-    
-    $user = User::find(Auth::id());
-    $activeSubscription = $user->activeSubscription();
-    
-    if (!$activeSubscription) {
-        return "No active subscription found";
-    }
-    
-    $subscriptionPlan = $activeSubscription->subscriptionPlan;
-    
-    $courses = $subscriptionPlan->courses()->get();
-    $products = $subscriptionPlan->digitalProducts()->get();
-    
-    return [
-        'subscription_id' => $activeSubscription->id,
-        'plan_id' => $subscriptionPlan->id,
-        'plan_name' => $subscriptionPlan->name,
-        'is_active' => $activeSubscription->is_active,
-        'ends_at' => $activeSubscription->ends_at,
-        'courses' => $courses->pluck('id', 'title'),
-        'products' => $products->pluck('id', 'name'),
-    ];
-});
 
 
 // Referral routes
@@ -372,9 +311,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/payment/upload/{order}', [CheckoutController::class, 'showPaymentReceipt'])->name('payment.upload');
     Route::post('/payment/upload/{order}', [CheckoutController::class, 'uploadPaymentReceipt'])->name('payment.upload.store');
     
-    // Subscription payment receipt routes
-    Route::get('/subscription/payment/upload/{subscription}', [SubscriptionController::class, 'showPaymentReceipt'])->name('subscription.payment.upload');
-    Route::post('/subscription/payment/upload/{subscription}', [SubscriptionController::class, 'uploadPaymentReceipt'])->name('subscription.payment.upload.store');
 });
 
 // Admin payment verification routes - Add inside admin routes group
@@ -384,15 +320,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', \App\Http\Middleware
     // Payment verifications
     Route::get('/payment-verifications', [App\Http\Controllers\Admin\PaymentVerificationController::class, 'index'])->name('payment-verifications.index');
     Route::get('/payment-verifications/order/{order}', [App\Http\Controllers\Admin\PaymentVerificationController::class, 'showOrder'])->name('payment-verifications.show-order');
-    Route::get('/payment-verifications/subscription/{subscription}', [App\Http\Controllers\Admin\PaymentVerificationController::class, 'showSubscription'])->name('payment-verifications.show-subscription');
     Route::post('/payment-verifications/order/{order}/verify', [App\Http\Controllers\Admin\PaymentVerificationController::class, 'verifyOrder'])->name('payment-verifications.verify-order');
-    Route::post('/payment-verifications/subscription/{subscription}/verify', [App\Http\Controllers\Admin\PaymentVerificationController::class, 'verifySubscription'])->name('payment-verifications.verify-subscription');
     Route::post('/payment-verifications/order/{order}/reject', [App\Http\Controllers\Admin\PaymentVerificationController::class, 'rejectOrder'])->name('payment-verifications.reject-order');
-    Route::post('/payment-verifications/subscription/{subscription}/reject', [App\Http\Controllers\Admin\PaymentVerificationController::class, 'rejectSubscription'])->name('payment-verifications.reject-subscription');
     
     // Receipt viewing
     Route::get('/orders/{order}/receipt', [App\Http\Controllers\Admin\OrderController::class, 'viewReceipt'])->name('orders.receipt');
-    Route::get('/subscriptions/{subscription}/receipt', [App\Http\Controllers\Admin\PaymentVerificationController::class, 'viewSubscriptionReceipt'])->name('subscriptions.receipt');
 });
 
 

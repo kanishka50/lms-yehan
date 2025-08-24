@@ -69,12 +69,6 @@
             <span class="menu-text">Digital Products</span>
         </a>
         
-        <a href="{{ route('admin.subscriptions.index') }}" class="admin-nav-link nav-item flex items-center px-6 py-3 text-gray-300 hover:bg-card hover:text-white transition-all duration-200">
-            <svg class="nav-icon mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 9a2 2 0 10-4 0v5a2 2 0 01-2 2h6m-6-4h4m8 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            <span class="menu-text">Subscriptions</span>
-        </a>
         
         <div class="px-4 py-2 mt-4">
             <p class="text-xs font-medium text-gray-400 uppercase tracking-wider" id="sales-text">Sales</p>
@@ -244,12 +238,6 @@
                 Digital Products
             </a>
             
-            <a href="{{ route('admin.subscriptions.index') }}" class="flex items-center px-4 py-3 text-gray-300 hover:bg-card hover:text-white transition-all duration-200 rounded-md">
-                <svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 9a2 2 0 10-4 0v5a2 2 0 01-2 2h6m-6-4h4m8 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                Subscriptions
-            </a>
             
             <div class="pt-4 pb-1 border-t border-gray-800">
                 <p class="px-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Sales</p>

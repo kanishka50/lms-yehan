@@ -14,7 +14,6 @@
                     <li><a href="{{ route('home') }}" class="text-gray-400 hover:text-primary-400 transition duration-200">Home</a></li>
                     <li><a href="{{ route('courses') }}" class="text-gray-400 hover:text-primary-400 transition duration-200">Courses</a></li>
                     <li><a href="{{ route('digital-products') }}" class="text-gray-400 hover:text-primary-400 transition duration-200">Digital Products</a></li>
-                    <li><a href="{{ route('subscription-plans') }}" class="text-gray-400 hover:text-primary-400 transition duration-200">Subscriptions</a></li>
                 </ul>
             </div>
             

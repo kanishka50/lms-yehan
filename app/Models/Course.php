@@ -58,11 +58,6 @@ class Course extends Model
         return $this->hasOne(Video::class)->where('is_preview', true);
     }
 
-    public function subscriptionPlans()
-    {
-        return $this->belongsToMany(SubscriptionPlan::class, 'subscription_plan_course')
-            ->withTimestamps();
-    }
 
     /**
  * Get the commission rate for this course.

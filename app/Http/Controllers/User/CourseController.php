@@ -11,47 +11,39 @@ use App\Models\User;
 class CourseController extends Controller
 {
     /**
- * Display a listing of the user's courses.
- */
-public function index()
-{
-    $user = Auth::user();
-    
-    // Get individually purchased courses
-    $purchasedCourses = $user->courses;
-    
-    // Get subscription courses if user has active subscription
-    $subscriptionCourses = collect();
-    $activeSubscription = User::find(Auth::id())->activeSubscription();
-    
-    if ($activeSubscription) {
-        $subscriptionCourses = $activeSubscription->subscriptionPlan->courses;
+     * Display a listing of the user's purchased courses.
+     */
+    public function index()
+    {
+        $user = Auth::user();
+        
+        // Get only purchased courses (no subscription logic)
+        $courses = User::find(Auth::id())->courses()->orderBy('user_courses.purchased_at', 'desc')->get();
+        
+        return view('user.courses.index', compact('courses'));
     }
-    
-    // Merge both collections (avoiding duplicates)
-    $courses = $purchasedCourses->merge($subscriptionCourses)->unique('id');
-    
-    return view('user.courses.index', compact('courses'));
-}
 
-// UserCourseController.php
-public function show(Course $course)
-{
-    // Check if user has access to the course
-    $user = User::find(Auth::id());
-    if (!$user || !$user->hasAccessToCourse($course)) {
-        return redirect()->route('user.courses.index')
-            ->with('error', 'You do not have access to this course.');
+    /**
+     * Display the specified course details.
+     */
+    public function show(Course $course)
+    {
+        $user = Auth::user();
+        
+        // Check if user has purchased this course
+        if (!User::find(Auth::id())->hasAccessToCourse($course)) {
+            return redirect()->route('user.courses.index')
+                ->with('error', 'You do not have access to this course. Please purchase it first.');
+        }
+        
+        // Get videos ordered by sequence
+        $videos = $course->videos()->orderBy('order_number')->get();
+        
+        // Get progress for each video
+        foreach ($videos as $video) {
+            $video->progress = $video->userProgress(Auth::id())->first();
+        }
+        
+        return view('user.courses.show', compact('course', 'videos'));
     }
-    
-    $videos = $course->videos()->orderBy('order_number')->get();
-    
-    // Get progress for each video
-    foreach ($videos as $video) {
-        $video->progress = $video->userProgress(Auth::id())->first();
-    }
-    
-    // Return the course content view directly
-    return view('user.courses.show', compact('course', 'videos'));
-}
 }

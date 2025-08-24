@@ -261,8 +261,7 @@ public function completeOrder(Order $order, $paymentId = null)
                     'course_id' => $item->item_id,
                 ], [
                     'order_id' => $order->id,
-                    'access_type' => 'purchased',   // NEW
-                    'expires_at' => null,           // NEW - never expires
+                    'expires_at' => null,           // Never expires for purchased courses
                     'purchased_at' => now(),
                 ]);
             } elseif ($item->item_type === 'digital_product') {
@@ -271,12 +270,7 @@ public function completeOrder(Order $order, $paymentId = null)
                 $key = $product->availableKeys()->first();
                 
                 if ($key) {
-                    $key->markAsUsed(
-                        $user->id, 
-                        false,      // not subscription
-                        null,       // no subscription ID
-                        null        // never expires
-                    );
+                    $key->markAsUsed($user->id);
                 }
             }
         }

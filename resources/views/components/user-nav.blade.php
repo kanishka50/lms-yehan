@@ -28,12 +28,6 @@
                 <span class="menu-text">My Courses</span>
             </a>
             
-            <a href="{{ route('user.subscriptions.index') }}" class="nav-item group flex items-center px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 {{ request()->routeIs('user.subscriptions.*') ? 'bg-accent-teal bg-opacity-10 text-accent-teal' : 'text-gray-400 hover:text-white hover:bg-card' }}">
-                <svg class="nav-icon w-6 h-6 mr-3 {{ request()->routeIs('user.subscriptions.*') ? 'text-accent-teal' : 'text-gray-400 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 9a2 2 0 10-4 0v5a2 2 0 01-2 2h6m-6-4h4m8 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span class="menu-text">Subscriptions</span>
-            </a>
             
             <a href="{{ route('user.digital-products.index') }}" class="nav-item group flex items-center px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 {{ request()->routeIs('user.digital-products.*') ? 'bg-accent-teal bg-opacity-10 text-accent-teal' : 'text-gray-400 hover:text-white hover:bg-card' }}">
                 <svg class="nav-icon w-6 h-6 mr-3 {{ request()->routeIs('user.digital-products.*') ? 'text-accent-teal' : 'text-gray-400 group-hover:text-white' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -167,17 +161,6 @@
                     </div>
                 </a>
                 
-                <a href="{{ route('user.subscriptions.index') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs('user.subscriptions.*') ? 'bg-accent-teal bg-opacity-10 text-accent-teal' : 'text-gray-400 hover:text-white hover:bg-card' }} transition-colors duration-200">
-                    <div class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-800 mr-4">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 9a2 2 0 10-4 0v5a2 2 0 01-2 2h6m-6-4h4m8 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <span class="font-medium">Subscriptions</span>
-                        <p class="text-xs text-gray-500">Manage your subscription plans</p>
-                    </div>
-                </a>
                 
                 <a href="{{ route('user.digital-products.index') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs('user.digital-products.*') ? 'bg-accent-teal bg-opacity-10 text-accent-teal' : 'text-gray-400 hover:text-white hover:bg-card' }} transition-colors duration-200">
                     <div class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-800 mr-4">

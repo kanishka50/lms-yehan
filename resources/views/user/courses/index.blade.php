@@ -68,9 +68,7 @@
                                 @endif
                                 <div class="absolute inset-0 bg-gradient-to-t from-dark to-transparent opacity-60"></div>
                                 
-                                @if(auth()->user()->activeSubscription() && auth()->user()->activeSubscription()->subscriptionPlan->courses()->where('courses.id', $course->id)->exists())
-                                    <span class="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 text-xs font-bold rounded">Subscription</span>
-                                @endif
+                                
                             </div>
                             
                             <div class="p-5">
