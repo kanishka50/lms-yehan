@@ -39,10 +39,11 @@ class DigitalProduct extends Model
      * Get the users who have access through the pivot table.
      */
     public function users()
-    {
-        return $this->belongsToMany(User::class, 'user_digital_product_access')
-                    ->withPivot('order_id', 'granted_at');
-    }
+{
+    return $this->belongsToMany(User::class, 'user_digital_product_access')
+                ->withPivot(['order_id', 'granted_at'])
+                ->using(UserDigitalProductAccess::class);
+}
 
     /**
      * Check if a specific user has access to this product.

@@ -19,6 +19,7 @@ class CommissionRate extends Model
     protected $casts = [
         'rate' => 'decimal:2',
         'is_active' => 'boolean',
+        'item_type' => 'required|in:course,study_material',
     ];
 
     /**

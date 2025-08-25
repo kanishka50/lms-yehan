@@ -51,7 +51,6 @@
                         </div>
                         @endif
                     </div>
-                    
                     <div class="space-y-3">
                         <div class="flex items-center justify-between p-3 bg-darker rounded-lg">
                             <span class="text-gray-400">Price:</span>
@@ -72,7 +71,7 @@
 
                 <!-- Action Button -->
                 <div class="flex justify-center">
-                    <a href="{{ route('user.digital-products.view-pdf', $digitalProduct) }}" 
+                    <a href="{{ route('user.digital-products.view-pdf', $digitalProduct) }}"
                        target="_blank"
                        class="inline-flex items-center px-8 py-3 bg-primary-500 text-white font-bold rounded-lg hover:bg-primary-600 transition-all duration-200 glow-effect">
                         <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

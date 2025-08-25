@@ -121,10 +121,8 @@ public function digitalProductAccess()
 public function digitalProducts()
 {
     return $this->belongsToMany(DigitalProduct::class, 'user_digital_product_access')
-                ->withPivot('order_id', 'granted_at')
-                ->withPivotValue('granted_at', function ($value) {
-                    return $value ? \Carbon\Carbon::parse($value) : null;
-                });
+                ->withPivot(['order_id', 'granted_at'])
+                ->using(UserDigitalProductAccess::class);  // This will use the pivot model with its casts
 }
 
 /**

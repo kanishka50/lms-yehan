@@ -2,13 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class UserDigitalProductAccess extends Model
+class UserDigitalProductAccess extends Pivot
 {
-    use HasFactory;
-
     protected $table = 'user_digital_product_access';
     
     public $timestamps = false;
@@ -23,13 +20,6 @@ class UserDigitalProductAccess extends Model
     protected $casts = [
         'granted_at' => 'datetime',
     ];
-
-    /**
-     * The attributes that should be mutated to dates.
-     *
-     * @var array
-     */
-    protected $dates = ['granted_at'];
 
     /**
      * Get the user who has access.
